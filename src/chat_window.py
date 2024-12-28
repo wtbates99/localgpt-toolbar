@@ -62,22 +62,8 @@ class ChatWindow(QMainWindow):
         context_layout.addStretch()
         layout.addLayout(context_layout)
 
-        # Search bar
-        search_layout = QHBoxLayout()
-        self.search_input = QLineEdit()
-        self.search_input.setPlaceholderText("Search chat history...")
-        self.search_input.textChanged.connect(self.search_history)
-        search_layout.addWidget(self.search_input)
-        layout.addLayout(search_layout)
-
         # Split view for search results and chat
         splitter = QSplitter(Qt.Orientation.Vertical)
-
-        # Search results
-        self.search_results = QListWidget()
-        self.search_results.itemClicked.connect(self.load_chat_thread)
-        self.search_results.setVisible(False)
-        splitter.addWidget(self.search_results)
 
         # Chat history
         self.chat_history = QTextEdit()
@@ -150,14 +136,15 @@ class ChatWindow(QMainWindow):
                     id=None,
                     user_message=message,
                     assistant_message=response.choices[0].message.content,
-                    context_id=current_context.id if current_context else None,
+                    context_id=current_context.id if current_context else "",
                     timestamp=datetime.now(),
                     thread_id=thread_id,
                 )
             )
 
             # Update chat history
-            self.append_message("Context", current_context.content)
+            if current_context:  # Only append context if it exists
+                self.append_message("Context", current_context.content)
             self.append_message("You", message)
             self.append_message("Assistant", response.choices[0].message.content)
 
@@ -186,52 +173,3 @@ class ChatWindow(QMainWindow):
     def closeEvent(self, event) -> None:
         self.closed.emit()
         super().closeEvent(event)
-
-    def search_history(self) -> None:
-        """Search chat history for the given query."""
-        query = self.search_input.text().strip().lower()
-        self.search_results.clear()
-
-        if not query:
-            self.search_results.setVisible(False)
-            return
-
-        messages = self.db.search_messages(query)
-
-        if messages:
-            self.search_results.setVisible(True)
-            for msg in messages:
-                item = QListWidgetItem(
-                    f"{msg.timestamp.strftime('%Y-%m-%d %H:%M')} - "
-                    f"{msg.content[:100]}..."
-                )
-                item.setData(Qt.ItemDataRole.UserRole, msg)
-                self.search_results.addItem(item)
-        else:
-            self.search_results.setVisible(False)
-
-    def load_chat_thread(self, item: QListWidgetItem) -> None:
-        """Load the chat thread containing the selected message."""
-        message = item.data(Qt.ItemDataRole.UserRole)
-        if not message.thread_id:
-            return
-
-        self.chat_history.clear()
-        messages = self.db.get_messages(thread_id=message.thread_id)
-        self.current_thread_id = message.thread_id
-
-        # Set the context if it exists
-        if messages and messages[0].context_id:
-            index = self.context_combo.findData(
-                lambda x: x.id == messages[0].context_id, Qt.ItemDataRole.UserRole
-            )
-            if index >= 0:
-                self.context_combo.setCurrentIndex(index)
-
-        for msg in messages:
-            sender = "You" if msg.role == "user" else "Assistant"
-            self.append_message(sender, msg.content)
-
-    def setup_event_loop(self) -> None:
-        """Set up the event loop for async operations."""
-        self.loop = asyncio.get_event_loop()

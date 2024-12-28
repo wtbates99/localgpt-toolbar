@@ -12,8 +12,8 @@ class AppConfig:
     database_path: str = "chat_history.db"
     max_history_items: int = 100
     default_context: str = ""
-    window_width: int = 600
-    window_height: int = 400
+    window_width: int = 800
+    window_height: int = 600
 
 
 class ConfigManager:

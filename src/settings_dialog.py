@@ -28,11 +28,6 @@ class SettingsDialog(QDialog):
         # Form layout for settings
         form_layout = QFormLayout()
 
-        # API Key
-        self.api_key_input = QLineEdit()
-        self.api_key_input.setEchoMode(QLineEdit.EchoMode.Password)
-        form_layout.addRow("OpenAI API Key:", self.api_key_input)
-
         # Model selection
         self.model_combo = QComboBox()
         self.model_combo.addItems(["gpt-4", "gpt-3.5-turbo"])
