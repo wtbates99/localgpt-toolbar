@@ -2,17 +2,14 @@ from PyQt6.QtWidgets import (
     QApplication,
     QSystemTrayIcon,
     QMenu,
-    QWidget,
-    QMessageBox,
     QDialog,
 )
 from PyQt6.QtGui import QIcon, QAction
-from PyQt6.QtCore import Qt, QObject, pyqtSignal
-import logging
+from PyQt6.QtCore import QObject, pyqtSignal
 from typing import Optional
 from pathlib import Path
 
-from src.config import ConfigManager, AppConfig
+from src.config import ConfigManager
 from src.ui.chat_window import ChatWindow
 from src.ui.settings_dialog import SettingsDialog
 from src.api.openai_client import OpenAIWrapper
@@ -24,31 +21,24 @@ class ToolbarApp(QObject):
 
     def __init__(self):
         super().__init__()
-        self.logger = logging.getLogger(__name__)
         self.config_manager = ConfigManager()
         self.setup_app()
 
     def setup_app(self) -> None:
-        try:
-            self.db = DatabaseManager(self.config_manager.config.database_path)
-            self.api_client = OpenAIWrapper(
-                self.config_manager.config.openai_api_key,
-                self.config_manager.config.model_name,
-            )
+        self.db = DatabaseManager(self.config_manager.config.database_path)
+        self.api_client = OpenAIWrapper(
+            self.config_manager.config.openai_api_key,
+            self.config_manager.config.model_name,
+        )
 
-            self.tray_icon = QSystemTrayIcon()
-            self.tray_icon.setIcon(self.get_app_icon())
-            self.setup_tray_menu()
+        self.tray_icon = QSystemTrayIcon()
+        self.tray_icon.setIcon(self.get_app_icon())
+        self.setup_tray_menu()
 
-            self.chat_window: Optional[ChatWindow] = None
-            self.chat_requested.connect(self.show_chat_window)
+        self.chat_window: Optional[ChatWindow] = None
+        self.chat_requested.connect(self.show_chat_window)
 
-            self.tray_icon.show()
-
-        except Exception as e:
-            self.logger.error(f"Failed to initialize app: {e}")
-            QMessageBox.critical(None, "Error", f"Failed to initialize app: {e}")
-            raise
+        self.tray_icon.show()
 
     def get_app_icon(self) -> QIcon:
         icon_path = Path(__file__).parent.parent.parent / "assets" / "icon.png"

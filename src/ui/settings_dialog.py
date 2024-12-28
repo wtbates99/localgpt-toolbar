@@ -9,9 +9,6 @@ from PyQt6.QtWidgets import (
     QSpinBox,
     QMessageBox,
 )
-from PyQt6.QtCore import Qt
-import logging
-
 from src.config import AppConfig, ConfigManager
 
 
@@ -19,7 +16,6 @@ class SettingsDialog(QDialog):
     def __init__(self, config_manager: ConfigManager, parent=None):
         super().__init__(parent)
         self.config_manager = config_manager
-        self.logger = logging.getLogger(__name__)
         self.setup_ui()
         self.load_settings()
 

@@ -10,7 +10,6 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt
 from datetime import datetime
-import logging
 
 from src.database.db_manager import DatabaseManager, Context
 
@@ -19,7 +18,6 @@ class ContextManagerDialog(QDialog):
     def __init__(self, db: DatabaseManager, parent=None):
         super().__init__(parent)
         self.db = db
-        self.logger = logging.getLogger(__name__)
         self.setup_ui()
         self.load_contexts()
 
@@ -63,18 +61,13 @@ class ContextManagerDialog(QDialog):
         layout.addLayout(right_layout)
 
     def load_contexts(self) -> None:
-        try:
-            contexts = self.db.get_contexts()
-            self.context_list.clear()
-            for context in contexts:
-                self.context_list.addItem(context.name)
-                # Store the context object in the item's data
-                self.context_list.item(self.context_list.count() - 1).setData(
-                    Qt.ItemDataRole.UserRole, context
-                )
-        except Exception as e:
-            self.logger.error(f"Failed to load contexts: {e}")
-            QMessageBox.critical(self, "Error", f"Failed to load contexts: {e}")
+        contexts = self.db.get_contexts()
+        self.context_list.clear()
+        for context in contexts:
+            self.context_list.addItem(context.name)
+            self.context_list.item(self.context_list.count() - 1).setData(
+                Qt.ItemDataRole.UserRole, context
+            )
 
     def on_context_selected(self, current, previous) -> None:
         if current:
@@ -91,21 +84,17 @@ class ContextManagerDialog(QDialog):
     def add_context(self) -> None:
         name, ok = QInputDialog.getText(self, "New Context", "Enter context name:")
         if ok and name:
-            try:
-                context = Context(
-                    id=None,
-                    name=name,
-                    content="",
-                    created_at=datetime.now(),
-                    updated_at=datetime.now(),
-                )
-                context_id = self.db.add_context(context)
-                context.id = context_id
-                item = self.context_list.addItem(name)
-                item.setData(Qt.ItemDataRole.UserRole, context)
-            except Exception as e:
-                self.logger.error(f"Failed to add context: {e}")
-                QMessageBox.critical(self, "Error", f"Failed to add context: {e}")
+            context = Context(
+                id=None,
+                name=name,
+                content="",
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
+            )
+            context_id = self.db.add_context(context)
+            context.id = context_id
+            item = self.context_list.addItem(name)
+            item.setData(Qt.ItemDataRole.UserRole, context)
 
     def delete_context(self) -> None:
         current = self.context_list.currentItem()
@@ -121,26 +110,16 @@ class ContextManagerDialog(QDialog):
         )
 
         if reply == QMessageBox.StandardButton.Yes:
-            try:
-                self.db.delete_context(context.id)
-                self.context_list.takeItem(self.context_list.row(current))
-                self.context_editor.clear()
-            except Exception as e:
-                self.logger.error(f"Failed to delete context: {e}")
-                QMessageBox.critical(self, "Error", f"Failed to delete context: {e}")
+            self.db.delete_context(context.id)
+            self.context_list.takeItem(self.context_list.row(current))
+            self.context_editor.clear()
 
     def save_context(self) -> None:
         current = self.context_list.currentItem()
         if not current:
             return
-
         context = current.data(Qt.ItemDataRole.UserRole)
         context.content = self.context_editor.toPlainText()
         context.updated_at = datetime.now()
-
-        try:
-            self.db.update_context(context)
-            self.save_button.setEnabled(False)
-        except Exception as e:
-            self.logger.error(f"Failed to save context: {e}")
-            QMessageBox.critical(self, "Error", f"Failed to save context: {e}")
+        self.db.update_context(context)
+        self.save_button.setEnabled(False)

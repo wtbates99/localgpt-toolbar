@@ -10,7 +10,6 @@ from PyQt6.QtGui import QIcon
 from qasync import QEventLoop
 
 from src.ui.toolbar_app import ToolbarApp
-from src.config import ConfigManager
 
 
 def setup_logging() -> None:

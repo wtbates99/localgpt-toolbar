@@ -13,17 +13,15 @@ from PyQt6.QtWidgets import (
     QListWidgetItem,
     QSplitter,
 )
-from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot, QTimer
+from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot
 from PyQt6.QtGui import QTextCursor, QKeySequence, QShortcut
 import asyncio
 import asyncio.events
-from qasync import QEventLoop, QApplication
-from typing import Optional, Dict, List
-import logging
+from typing import Optional
 from datetime import datetime
 
 from src.api.openai_client import OpenAIWrapper
-from src.database.db_manager import DatabaseManager, ChatMessage, Context
+from src.database.db_manager import DatabaseManager, ChatMessage
 from src.config import AppConfig
 
 
@@ -41,7 +39,6 @@ class ChatWindow(QMainWindow):
         self.api_client = api_client
         self.db = db
         self.config = config
-        self.logger = logging.getLogger(__name__)
         self._sending = False
 
         self.setup_ui()
@@ -157,10 +154,6 @@ class ChatWindow(QMainWindow):
             self.append_message("You", message)
             self.append_message("Assistant", response.choices[0].message.content)
 
-        except Exception as e:
-            self.logger.error(f"Failed to send message: {e}")
-            self.append_message("System", f"Error: {str(e)}")
-
         finally:
             self.progress_bar.setVisible(False)
 
@@ -176,16 +169,12 @@ class ChatWindow(QMainWindow):
 
     def load_contexts(self) -> None:
         """Load available contexts into the context selector."""
-        try:
-            self.context_combo.clear()
-            self.context_combo.addItem("No Context", None)
+        self.context_combo.clear()
+        self.context_combo.addItem("No Context", None)
 
-            contexts = self.db.get_contexts()
-            for context in contexts:
-                self.context_combo.addItem(context.name, context)
-        except Exception as e:
-            self.logger.error(f"Failed to load contexts: {e}")
-            self.append_message("System", f"Failed to load contexts: {str(e)}")
+        contexts = self.db.get_contexts()
+        for context in contexts:
+            self.context_combo.addItem(context.name, context)
 
     def closeEvent(self, event) -> None:
         self.closed.emit()
@@ -200,25 +189,19 @@ class ChatWindow(QMainWindow):
             self.search_results.setVisible(False)
             return
 
-        try:
-            # Get messages matching the search query
-            messages = self.db.search_messages(query)
+        messages = self.db.search_messages(query)
 
-            if messages:
-                self.search_results.setVisible(True)
-                for msg in messages:
-                    item = QListWidgetItem(
-                        f"{msg.timestamp.strftime('%Y-%m-%d %H:%M')} - "
-                        f"{msg.content[:100]}..."
-                    )
-                    item.setData(Qt.ItemDataRole.UserRole, msg)
-                    self.search_results.addItem(item)
-            else:
-                self.search_results.setVisible(False)
-
-        except Exception as e:
-            self.logger.error(f"Failed to search messages: {e}")
-            self.append_message("System", f"Search failed: {str(e)}")
+        if messages:
+            self.search_results.setVisible(True)
+            for msg in messages:
+                item = QListWidgetItem(
+                    f"{msg.timestamp.strftime('%Y-%m-%d %H:%M')} - "
+                    f"{msg.content[:100]}..."
+                )
+                item.setData(Qt.ItemDataRole.UserRole, msg)
+                self.search_results.addItem(item)
+        else:
+            self.search_results.setVisible(False)
 
     def load_chat_thread(self, item: QListWidgetItem) -> None:
         """Load the chat thread containing the selected message."""
@@ -226,23 +209,13 @@ class ChatWindow(QMainWindow):
         if not message.thread_id:
             return
 
-        try:
-            # Clear current chat and load the thread
-            self.chat_history.clear()
-            messages = self.db.get_messages(thread_id=message.thread_id)
+        self.chat_history.clear()
+        messages = self.db.get_messages(thread_id=message.thread_id)
 
-            for msg in reversed(messages):  # Show oldest first
-                sender = "You" if msg.role == "user" else "Assistant"
-                self.append_message(sender, msg.content)
-
-        except Exception as e:
-            self.logger.error(f"Failed to load chat thread: {e}")
-            self.append_message("System", f"Failed to load chat thread: {str(e)}")
+        for msg in reversed(messages):  # Show oldest first
+            sender = "You" if msg.role == "user" else "Assistant"
+            self.append_message(sender, msg.content)
 
     def setup_event_loop(self) -> None:
         """Set up the event loop for async operations."""
-        try:
-            self.loop = asyncio.get_event_loop()
-        except RuntimeError:
-            self.loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(self.loop)
+        self.loop = asyncio.get_event_loop()
