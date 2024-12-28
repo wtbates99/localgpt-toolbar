@@ -56,6 +56,11 @@ class ToolbarApp(QObject):
         chat_action.setShortcut("Ctrl+Shift+C")
         menu.addAction(chat_action)
 
+        # Search action
+        search_action = QAction("Search History", self)
+        search_action.triggered.connect(self.show_search_dialog)
+        menu.addAction(search_action)
+
         # Context Manager action
         context_action = QAction("Manage Contexts", self)
         context_action.triggered.connect(self.show_context_manager)
@@ -106,3 +111,9 @@ class ToolbarApp(QObject):
         # Refresh context in chat window if it's open
         if self.chat_window:
             self.chat_window.load_contexts()
+
+    def show_search_dialog(self) -> None:
+        from search_dialog import SearchDialog
+
+        dialog = SearchDialog(self.db)
+        dialog.exec()

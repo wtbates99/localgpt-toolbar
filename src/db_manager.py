@@ -13,6 +13,7 @@ class ChatMessage:
     context_id: Optional[int]
     timestamp: datetime
     thread_id: Optional[int]
+    context_name: Optional[str] = None
 
 
 @dataclass
@@ -134,18 +135,48 @@ class DatabaseManager:
             conn.execute("DELETE FROM contexts WHERE id = ?", (context_id,))
             conn.commit()
 
-    def search_messages(self, query: str, limit: int = 50) -> List[ChatMessage]:
+    def search_messages(
+        self, query: str, search_type: str = "All", limit: int = 50
+    ) -> List[ChatMessage]:
         """Search messages containing the given query."""
         with self.get_connection() as conn:
-            cursor = conn.execute(
-                """
+            sql_query = """
                 SELECT m.*, c.name as context_name
                 FROM chat_messages m
                 LEFT JOIN contexts c ON m.context_id = c.id
-                WHERE m.user_message LIKE ?
+                WHERE
+            """
+
+            if search_type == "User Messages":
+                sql_query += "m.user_message LIKE ?"
+            elif search_type == "Assistant Responses":
+                sql_query += "m.assistant_message LIKE ?"
+            else:  # All
+                sql_query += "(m.user_message LIKE ? OR m.assistant_message LIKE ?)"
+
+            sql_query += """
                 ORDER BY m.timestamp DESC
                 LIMIT ?
-                """,
-                (f"%{query}%", limit),
-            )
-            return [ChatMessage(**dict(row)) for row in cursor.fetchall()]
+            """
+
+            if search_type == "All":
+                params = (f"%{query}%", f"%{query}%", limit)
+            else:
+                params = (f"%{query}%", limit)
+
+            cursor = conn.execute(sql_query, params)
+            rows = cursor.fetchall()
+            messages = []
+            for row in rows:
+                row_dict = dict(row)
+                # Extract context_name before creating ChatMessage
+                context_name = row_dict.pop("context_name", None)
+                # Convert timestamp string to datetime object
+                if isinstance(row_dict["timestamp"], str):
+                    row_dict["timestamp"] = datetime.fromisoformat(
+                        row_dict["timestamp"].replace("Z", "+00:00")
+                    )
+                # Create ChatMessage with the remaining fields
+                message = ChatMessage(**row_dict, context_name=context_name)
+                messages.append(message)
+            return messages
