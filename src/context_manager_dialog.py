@@ -66,10 +66,9 @@ class ContextManagerDialog(QDialog):
         contexts = self.db.get_contexts()
         self.context_list.clear()
         for context in contexts:
-            item = self.context_list.addItem(context.name)
-            self.context_list.item(self.context_list.count() - 1).setData(
-                Qt.ItemDataRole.UserRole, context
-            )
+            item = QListWidgetItem(context.name)
+            item.setData(Qt.ItemDataRole.UserRole, context)
+            self.context_list.addItem(item)
 
     def on_context_selected(self, current, previous) -> None:
         if current:
