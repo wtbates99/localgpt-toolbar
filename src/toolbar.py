@@ -11,10 +11,11 @@ from pathlib import Path
 
 from config import ConfigManager
 from chat_window import ChatWindow
-from settings_dialog import SettingsDialog
+from settings import SettingsDialog
 from openai_client import OpenAIWrapper
 from db_manager import DatabaseManager
-from context_manager_dialog import ContextManagerDialog
+from context_manager import ContextManagerDialog
+from search import SearchDialog
 
 
 class ToolbarApp(QObject):
@@ -113,7 +114,5 @@ class ToolbarApp(QObject):
             self.chat_window.load_contexts()
 
     def show_search_dialog(self) -> None:
-        from search_dialog import SearchDialog
-
         dialog = SearchDialog(self.db)
         dialog.exec()

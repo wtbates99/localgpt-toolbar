@@ -63,7 +63,6 @@ class SettingsDialog(QDialog):
 
     def load_settings(self) -> None:
         config = self.config_manager.config
-        self.api_key_input.setText(config.openai_api_key)
         self.model_combo.setCurrentText(config.model_name)
         self.width_input.setValue(config.window_width)
         self.height_input.setValue(config.window_height)

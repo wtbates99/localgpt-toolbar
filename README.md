@@ -18,3 +18,29 @@ Make sure that you have python installed, then run the following command to inst
 `pip install -r requirements.txt`
 
 To use the application, simply run the `src/main.py` file. The application will start in the system tray. You can then access the chat window by clicking the icon in the system tray.
+
+## Images
+
+Here is what the toolbar icon looks like:
+
+![Toolbar Icon](assets/toolbar_icon.png)
+
+Here is what the toolbar dropdown menu looks like:
+
+![Toolbar Dropdown Menu](assets/toolbar_dropdown.png)
+
+Here is what the chat window looks like:
+
+![Chat Window](assets/chat_window.png)
+
+Here is what the context manager window looks like:
+
+![Context Manager Window](assets/context_manager_window.png)
+
+Here is what the search window looks like:
+
+![Search Window](assets/search_history.png)
+
+Here is what the settings window looks like:
+
+![Settings Window](assets/settings_window.png)

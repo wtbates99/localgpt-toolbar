@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui import QIcon
 from qasync import QEventLoop
 
-from toolbar_app import ToolbarApp
+from toolbar import ToolbarApp
 
 
 def main() -> None:
