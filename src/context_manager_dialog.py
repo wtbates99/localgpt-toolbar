@@ -67,7 +67,14 @@ class ContextManagerDialog(QDialog):
         self.context_list.clear()
         for context in contexts:
             item = QListWidgetItem(context.name)
-            item.setData(Qt.ItemDataRole.UserRole, context)
+            new_context = Context(
+                id=context.id,
+                name=context.name,
+                content=context.content,
+                created_at=context.created_at,
+                updated_at=context.updated_at,
+            )
+            item.setData(Qt.ItemDataRole.UserRole, new_context)
             self.context_list.addItem(item)
 
     def on_context_selected(self, current, previous) -> None:
@@ -153,9 +160,21 @@ class ContextManagerDialog(QDialog):
         )
 
         if reply == QMessageBox.StandardButton.Yes:
+            current_row = self.context_list.row(current)
             self.db.delete_context(context.id)
-            self.context_list.takeItem(self.context_list.row(current))
-            self.context_editor.clear()
+            self.context_list.takeItem(current_row)
+
+            # Select the next available item
+            if self.context_list.count() > 0:
+                # If there are items after the deleted one, select the next item
+                if current_row < self.context_list.count():
+                    self.context_list.setCurrentRow(current_row)
+                # Otherwise select the last item
+                else:
+                    self.context_list.setCurrentRow(self.context_list.count() - 1)
+            else:
+                # If no items left, clear the editor
+                self.context_editor.clear()
 
     def save_context(self) -> None:
         current = self.context_list.currentItem()

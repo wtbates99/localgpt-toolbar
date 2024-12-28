@@ -104,7 +104,18 @@ class DatabaseManager:
     def get_contexts(self) -> List[Context]:
         with self.get_connection() as conn:
             cursor = conn.execute("SELECT * FROM contexts ORDER BY name")
-            return [Context(**dict(row)) for row in cursor.fetchall()]
+            contexts = []
+            for row in cursor.fetchall():
+                row_dict = dict(row)
+                # Convert timestamp strings to datetime objects
+                row_dict["created_at"] = datetime.fromisoformat(
+                    row_dict["created_at"].replace("Z", "+00:00")
+                )
+                row_dict["updated_at"] = datetime.fromisoformat(
+                    row_dict["updated_at"].replace("Z", "+00:00")
+                )
+                contexts.append(Context(**row_dict))
+            return contexts
 
     def add_context(self, context: Context) -> int:
         with self.get_connection() as conn:
