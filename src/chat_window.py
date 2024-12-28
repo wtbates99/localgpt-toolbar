@@ -121,13 +121,11 @@ class ChatWindow(QMainWindow):
                 context=current_context.content if current_context else "",
             )
 
-            # Generate a new thread_id for the first message in a conversation
             thread_id = None
             if not hasattr(self, "current_thread_id"):
                 self.current_thread_id = datetime.now().timestamp()
             thread_id = self.current_thread_id
 
-            # Save the conversation entry with both user message and assistant response
             self.db.add_message(
                 ChatMessage(
                     id=None,
@@ -139,8 +137,7 @@ class ChatWindow(QMainWindow):
                 )
             )
 
-            # Update chat history
-            if current_context:  # Only append context if it exists
+            if current_context:
                 self.append_message("Context", current_context.content)
             self.append_message("You", message)
             self.append_message("Assistant", response.choices[0].message.content)

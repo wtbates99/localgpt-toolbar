@@ -29,7 +29,6 @@ class ContextManagerDialog(QDialog):
 
         layout = QHBoxLayout(self)
 
-        # Left side - context list
         left_layout = QVBoxLayout()
         self.context_list = QListWidget()
         self.context_list.currentItemChanged.connect(self.on_context_selected)
@@ -46,7 +45,6 @@ class ContextManagerDialog(QDialog):
 
         layout.addLayout(left_layout)
 
-        # Right side - context editor
         right_layout = QVBoxLayout()
         self.context_editor = QTextEdit()
         self.context_editor.textChanged.connect(self.on_context_edited)
@@ -90,27 +88,22 @@ class ContextManagerDialog(QDialog):
             self.save_button.setEnabled(True)
 
     def add_context(self) -> None:
-        # First dialog for context name
         name, ok = QInputDialog.getText(self, "New Context", "Enter context name:")
         if not ok or not name:
             return
 
-        # Create a dialog for context description
         description_dialog = QDialog(self)
         description_dialog.setWindowTitle("Context Description")
         description_dialog.setMinimumSize(500, 400)
 
         layout = QVBoxLayout(description_dialog)
 
-        # Add instruction label
         label = QLabel("Enter or paste the context description:")
         layout.addWidget(label)
 
-        # Add text editor for description
         description_edit = QTextEdit()
         layout.addWidget(description_edit)
 
-        # Add buttons
         button_layout = QHBoxLayout()
         save_button = QPushButton("Save")
         cancel_button = QPushButton("Cancel")
@@ -118,15 +111,12 @@ class ContextManagerDialog(QDialog):
         button_layout.addWidget(cancel_button)
         layout.addLayout(button_layout)
 
-        # Connect buttons
         save_button.clicked.connect(description_dialog.accept)
         cancel_button.clicked.connect(description_dialog.reject)
 
-        # Show dialog and get result
         if description_dialog.exec() == QDialog.DialogCode.Accepted:
             description = description_edit.toPlainText()
 
-            # Create and save the context
             context = Context(
                 id=None,
                 name=name,
@@ -137,12 +127,10 @@ class ContextManagerDialog(QDialog):
             context_id = self.db.add_context(context)
             context.id = context_id
 
-            # Add to list widget
             item = QListWidgetItem(name)
             item.setData(Qt.ItemDataRole.UserRole, context)
             self.context_list.addItem(item)
 
-            # Select the new item
             self.context_list.setCurrentItem(item)
             self.context_editor.setText(description)
 
@@ -164,16 +152,12 @@ class ContextManagerDialog(QDialog):
             self.db.delete_context(context.id)
             self.context_list.takeItem(current_row)
 
-            # Select the next available item
             if self.context_list.count() > 0:
-                # If there are items after the deleted one, select the next item
                 if current_row < self.context_list.count():
                     self.context_list.setCurrentRow(current_row)
-                # Otherwise select the last item
                 else:
                     self.context_list.setCurrentRow(self.context_list.count() - 1)
             else:
-                # If no items left, clear the editor
                 self.context_editor.clear()
 
     def save_context(self) -> None:

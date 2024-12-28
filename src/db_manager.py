@@ -107,7 +107,6 @@ class DatabaseManager:
             contexts = []
             for row in cursor.fetchall():
                 row_dict = dict(row)
-                # Convert timestamp strings to datetime objects
                 row_dict["created_at"] = datetime.fromisoformat(
                     row_dict["created_at"].replace("Z", "+00:00")
                 )
@@ -180,14 +179,11 @@ class DatabaseManager:
             messages = []
             for row in rows:
                 row_dict = dict(row)
-                # Extract context_name before creating ChatMessage
                 context_name = row_dict.pop("context_name", None)
-                # Convert timestamp string to datetime object
                 if isinstance(row_dict["timestamp"], str):
                     row_dict["timestamp"] = datetime.fromisoformat(
                         row_dict["timestamp"].replace("Z", "+00:00")
                     )
-                # Create ChatMessage with the remaining fields
                 message = ChatMessage(**row_dict, context_name=context_name)
                 messages.append(message)
             return messages
