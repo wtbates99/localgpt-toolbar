@@ -8,9 +8,6 @@ from PyQt6.QtWidgets import (
     QComboBox,
     QProgressBar,
     QLabel,
-    QLineEdit,
-    QListWidget,
-    QListWidgetItem,
     QSplitter,
 )
 from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot

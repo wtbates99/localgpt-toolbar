@@ -9,9 +9,7 @@ from PyQt6.QtWidgets import (
     QLabel,
     QComboBox,
 )
-from PyQt6.QtCore import Qt
-from db_manager import DatabaseManager, ChatMessage
-from datetime import datetime
+from db_manager import DatabaseManager
 
 
 class SearchDialog(QDialog):
