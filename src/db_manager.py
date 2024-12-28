@@ -8,8 +8,8 @@ from typing import List, Optional, Generator
 @dataclass
 class ChatMessage:
     id: Optional[int]
-    role: str
-    content: str
+    user_message: str
+    assistant_message: str
     context_id: Optional[int]
     timestamp: datetime
     thread_id: Optional[int]
@@ -52,8 +52,8 @@ class DatabaseManager:
 
                 CREATE TABLE IF NOT EXISTS chat_messages (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    role TEXT NOT NULL,
-                    content TEXT NOT NULL,
+                    user_message TEXT NOT NULL,
+                    assistant_message TEXT NOT NULL,
                     context_id INTEGER,
                     thread_id INTEGER,
                     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -69,12 +69,12 @@ class DatabaseManager:
         with self.get_connection() as conn:
             cursor = conn.execute(
                 """
-                INSERT INTO chat_messages (role, content, context_id, thread_id, timestamp)
+                INSERT INTO chat_messages (user_message, assistant_message, context_id, thread_id, timestamp)
                 VALUES (?, ?, ?, ?, ?)
             """,
                 (
-                    message.role,
-                    message.content,
+                    message.user_message,
+                    message.assistant_message,
                     message.context_id,
                     message.thread_id,
                     message.timestamp,
@@ -84,16 +84,20 @@ class DatabaseManager:
             return cursor.lastrowid
 
     def get_messages(
-        self, thread_id: Optional[int] = None, limit: int = 100
+        self,
+        thread_id: Optional[int] = None,
+        context_id: Optional[int] = None,
+        limit: int = 100,
     ) -> List[ChatMessage]:
         with self.get_connection() as conn:
             query = """
                 SELECT * FROM chat_messages
                 WHERE thread_id = COALESCE(?, thread_id)
-                ORDER BY timestamp DESC
+                AND context_id = COALESCE(?, context_id)
+                ORDER BY timestamp ASC
                 LIMIT ?
             """
-            cursor = conn.execute(query, (thread_id, limit))
+            cursor = conn.execute(query, (thread_id, context_id, limit))
             return [ChatMessage(**dict(row)) for row in cursor.fetchall()]
 
     def get_contexts(self) -> List[Context]:
@@ -135,9 +139,11 @@ class DatabaseManager:
         with self.get_connection() as conn:
             cursor = conn.execute(
                 """
-                SELECT * FROM chat_messages
-                WHERE content LIKE ?
-                ORDER BY timestamp DESC
+                SELECT m.*, c.name as context_name
+                FROM chat_messages m
+                LEFT JOIN contexts c ON m.context_id = c.id
+                WHERE m.user_message LIKE ?
+                ORDER BY m.timestamp DESC
                 LIMIT ?
                 """,
                 (f"%{query}%", limit),

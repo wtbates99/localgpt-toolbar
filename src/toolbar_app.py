@@ -14,6 +14,7 @@ from chat_window import ChatWindow
 from settings_dialog import SettingsDialog
 from openai_client import OpenAIWrapper
 from db_manager import DatabaseManager
+from context_manager_dialog import ContextManagerDialog
 
 
 class ToolbarApp(QObject):
@@ -55,6 +56,11 @@ class ToolbarApp(QObject):
         chat_action.setShortcut("Ctrl+Shift+C")
         menu.addAction(chat_action)
 
+        # Context Manager action
+        context_action = QAction("Manage Contexts", self)
+        context_action.triggered.connect(self.show_context_manager)
+        menu.addAction(context_action)
+
         # Settings action
         settings_action = QAction("Settings", self)
         settings_action.triggered.connect(self.show_settings)
@@ -93,3 +99,10 @@ class ToolbarApp(QObject):
         if dialog.exec() == QDialog.DialogCode.Accepted:
             # Reload app with new settings
             self.setup_app()
+
+    def show_context_manager(self) -> None:
+        dialog = ContextManagerDialog(self.db)
+        dialog.exec()
+        # Refresh context in chat window if it's open
+        if self.chat_window:
+            self.chat_window.load_contexts()

@@ -132,25 +132,32 @@ class ChatWindow(QMainWindow):
         self.progress_bar.setVisible(True)
 
         try:
-            context = self.context_combo.currentData()
+            current_context = self.context_combo.currentData()
             response = await self.api_client.send_message(
                 [{"role": "user", "content": message}],
-                context=context.content if context else "",
+                context=current_context.content if current_context else "",
             )
 
-            # Save message to database
+            # Generate a new thread_id for the first message in a conversation
+            thread_id = None
+            if not hasattr(self, "current_thread_id"):
+                self.current_thread_id = datetime.now().timestamp()
+            thread_id = self.current_thread_id
+
+            # Save the conversation entry with both user message and assistant response
             self.db.add_message(
                 ChatMessage(
                     id=None,
-                    role="user",
-                    content=message,
-                    context_id=context.id if context else None,
+                    user_message=message,
+                    assistant_message=response.choices[0].message.content,
+                    context_id=current_context.id if current_context else None,
                     timestamp=datetime.now(),
-                    thread_id=None,
+                    thread_id=thread_id,
                 )
             )
 
             # Update chat history
+            self.append_message("Context", current_context.content)
             self.append_message("You", message)
             self.append_message("Assistant", response.choices[0].message.content)
 
@@ -211,8 +218,17 @@ class ChatWindow(QMainWindow):
 
         self.chat_history.clear()
         messages = self.db.get_messages(thread_id=message.thread_id)
+        self.current_thread_id = message.thread_id
 
-        for msg in reversed(messages):  # Show oldest first
+        # Set the context if it exists
+        if messages and messages[0].context_id:
+            index = self.context_combo.findData(
+                lambda x: x.id == messages[0].context_id, Qt.ItemDataRole.UserRole
+            )
+            if index >= 0:
+                self.context_combo.setCurrentIndex(index)
+
+        for msg in messages:
             sender = "You" if msg.role == "user" else "Assistant"
             self.append_message(sender, msg.content)
 

@@ -7,11 +7,13 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QInputDialog,
     QMessageBox,
+    QLabel,
+    QListWidgetItem,
 )
 from PyQt6.QtCore import Qt
 from datetime import datetime
 
-from src.db_manager import DatabaseManager, Context
+from db_manager import DatabaseManager, Context
 
 
 class ContextManagerDialog(QDialog):
@@ -64,7 +66,7 @@ class ContextManagerDialog(QDialog):
         contexts = self.db.get_contexts()
         self.context_list.clear()
         for context in contexts:
-            self.context_list.addItem(context.name)
+            item = self.context_list.addItem(context.name)
             self.context_list.item(self.context_list.count() - 1).setData(
                 Qt.ItemDataRole.UserRole, context
             )
@@ -82,19 +84,61 @@ class ContextManagerDialog(QDialog):
             self.save_button.setEnabled(True)
 
     def add_context(self) -> None:
+        # First dialog for context name
         name, ok = QInputDialog.getText(self, "New Context", "Enter context name:")
-        if ok and name:
+        if not ok or not name:
+            return
+
+        # Create a dialog for context description
+        description_dialog = QDialog(self)
+        description_dialog.setWindowTitle("Context Description")
+        description_dialog.setMinimumSize(500, 400)
+
+        layout = QVBoxLayout(description_dialog)
+
+        # Add instruction label
+        label = QLabel("Enter or paste the context description:")
+        layout.addWidget(label)
+
+        # Add text editor for description
+        description_edit = QTextEdit()
+        layout.addWidget(description_edit)
+
+        # Add buttons
+        button_layout = QHBoxLayout()
+        save_button = QPushButton("Save")
+        cancel_button = QPushButton("Cancel")
+        button_layout.addWidget(save_button)
+        button_layout.addWidget(cancel_button)
+        layout.addLayout(button_layout)
+
+        # Connect buttons
+        save_button.clicked.connect(description_dialog.accept)
+        cancel_button.clicked.connect(description_dialog.reject)
+
+        # Show dialog and get result
+        if description_dialog.exec() == QDialog.DialogCode.Accepted:
+            description = description_edit.toPlainText()
+
+            # Create and save the context
             context = Context(
                 id=None,
                 name=name,
-                content="",
+                content=description,
                 created_at=datetime.now(),
                 updated_at=datetime.now(),
             )
             context_id = self.db.add_context(context)
             context.id = context_id
-            item = self.context_list.addItem(name)
+
+            # Add to list widget
+            item = QListWidgetItem(name)
             item.setData(Qt.ItemDataRole.UserRole, context)
+            self.context_list.addItem(item)
+
+            # Select the new item
+            self.context_list.setCurrentItem(item)
+            self.context_editor.setText(description)
 
     def delete_context(self) -> None:
         current = self.context_list.currentItem()
