@@ -1,16 +1,11 @@
-#!/usr/bin/env python3
-"""Main entry point for the AI Chat Toolbar application."""
-
 import sys
 import logging
-import asyncio
 from pathlib import Path
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui import QIcon
-from qasync import QEventLoop
 
-from src.ui.toolbar_app import ToolbarApp
-from src.config import ConfigManager
+from .ui.toolbar_app import ToolbarApp
+from .config import ConfigManager
 
 
 def setup_logging() -> None:
@@ -37,12 +32,8 @@ def main() -> None:
         app.setQuitOnLastWindowClosed(False)
         app.setApplicationName("AI Chat Toolbar")
 
-        # Create event loop
-        loop = QEventLoop(app)
-        asyncio.set_event_loop(loop)
-
         # Set application icon
-        icon_path = Path(__file__).parent / "assets" / "icon.png"
+        icon_path = Path(__file__).parent / "resources" / "icon.png"
         if icon_path.exists():
             app.setWindowIcon(QIcon(str(icon_path)))
 
@@ -50,8 +41,7 @@ def main() -> None:
         toolbar = ToolbarApp()
 
         # Start event loop
-        with loop:
-            loop.run_forever()
+        sys.exit(app.exec())
 
     except Exception as e:
         logger.error(f"Application failed to start: {e}", exc_info=True)
