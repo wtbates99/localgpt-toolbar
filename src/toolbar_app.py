@@ -9,11 +9,11 @@ from PyQt6.QtCore import QObject, pyqtSignal
 from typing import Optional
 from pathlib import Path
 
-from src.config import ConfigManager
-from src.ui.chat_window import ChatWindow
-from src.ui.settings_dialog import SettingsDialog
-from src.api.openai_client import OpenAIWrapper
-from src.database.db_manager import DatabaseManager
+from config import ConfigManager
+from chat_window import ChatWindow
+from settings_dialog import SettingsDialog
+from openai_client import OpenAIWrapper
+from db_manager import DatabaseManager
 
 
 class ToolbarApp(QObject):
@@ -41,9 +41,8 @@ class ToolbarApp(QObject):
         self.tray_icon.show()
 
     def get_app_icon(self) -> QIcon:
-        icon_path = Path(__file__).parent.parent.parent / "assets" / "icon.png"
+        icon_path = Path(__file__).parent.parent / "assets" / "icon.png"
         if not icon_path.exists():
-            self.logger.warning(f"Icon not found at {icon_path}")
             return QIcon()
         return QIcon(str(icon_path))
 

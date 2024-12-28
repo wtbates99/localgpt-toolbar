@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import (
     QSpinBox,
     QMessageBox,
 )
-from src.config import AppConfig, ConfigManager
+from config import AppConfig, ConfigManager
 
 
 class SettingsDialog(QDialog):

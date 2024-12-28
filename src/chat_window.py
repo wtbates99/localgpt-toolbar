@@ -20,9 +20,9 @@ import asyncio.events
 from typing import Optional
 from datetime import datetime
 
-from src.api.openai_client import OpenAIWrapper
-from src.database.db_manager import DatabaseManager, ChatMessage
-from src.config import AppConfig
+from openai_client import OpenAIWrapper
+from db_manager import DatabaseManager, ChatMessage
+from config import AppConfig
 
 
 class ChatWindow(QMainWindow):

@@ -11,7 +11,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt
 from datetime import datetime
 
-from src.database.db_manager import DatabaseManager, Context
+from src.db_manager import DatabaseManager, Context
 
 
 class ContextManagerDialog(QDialog):
