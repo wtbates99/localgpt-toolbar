@@ -9,6 +9,8 @@ Toolbar Chat is a chat application that uses OpenAI's API to answer questions. T
 - Search history
 - Settings
 
+> **IMPORTANT:** o series models are still in development.
+
 ## Usage
 
 Set your openapi key as an environment variable:
@@ -43,4 +45,4 @@ Here is what the search window looks like:
 
 Here is what the settings window looks like:
 
-![Settings Window](assets/settings_window.png)
+![Settings Window](assets/settings.png)
