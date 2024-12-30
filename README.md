@@ -37,7 +37,7 @@ Here is what the chat window looks like:
 
 Here is what the context manager window looks like:
 
-![Context Manager Window](assets/context_manager_window.png)
+![Context Manager Window](assets/context_manager.png)
 
 Here is what the search window looks like:
 
