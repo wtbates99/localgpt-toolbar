@@ -8,7 +8,7 @@ from pathlib import Path
 @dataclass
 class AppConfig:
     openai_api_key: str
-    model_name: str = "gpt-4"
+    model_name: str = "gpt-4o-mini"
     database_path: str = "chat_history.db"
     max_history_items: int = 100
     default_context: str = ""

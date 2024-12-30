@@ -6,7 +6,6 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QComboBox,
     QSpinBox,
-    QMessageBox,
 )
 from config import AppConfig, ConfigManager
 
@@ -29,7 +28,7 @@ class SettingsDialog(QDialog):
 
         # Model selection
         self.model_combo = QComboBox()
-        self.model_combo.addItems(["gpt-4", "gpt-3.5-turbo"])
+        self.model_combo.addItems(["gpt-4o", "gpt-4o-mini", "o1", "o1-mini"])
         form_layout.addRow("Model:", self.model_combo)
 
         # Window dimensions
@@ -69,16 +68,15 @@ class SettingsDialog(QDialog):
         self.history_limit.setValue(config.max_history_items)
 
     def save_settings(self) -> None:
-        try:
-            new_config = AppConfig(
-                openai_api_key=self.api_key_input.text(),
-                model_name=self.model_combo.currentText(),
-                window_width=self.width_input.value(),
-                window_height=self.height_input.value(),
-                max_history_items=self.history_limit.value(),
-            )
-            self.config_manager.save_config(new_config)
-            self.accept()
-        except Exception as e:
-            self.logger.error(f"Failed to save settings: {e}")
-            QMessageBox.critical(self, "Error", f"Failed to save settings: {e}")
+        current_config = self.config_manager.config
+        new_config = AppConfig(
+            openai_api_key=current_config.openai_api_key,
+            model_name=self.model_combo.currentText(),
+            window_width=self.width_input.value(),
+            window_height=self.height_input.value(),
+            max_history_items=self.history_limit.value(),
+            database_path=current_config.database_path,
+            default_context=current_config.default_context,
+        )
+        self.config_manager.save_config(new_config)
+        self.accept()
