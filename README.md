@@ -19,6 +19,11 @@ Set your openapi key as an environment variable:
 Make sure that you have python installed, then run the following command to install the dependencies:
 `pip install -r requirements.txt`
 
+If on Linux, install the following dependencies:
+`sudo apt install -y libxcb1 libxcb-xinerama0 libxcb-cursor0 libxkbcommon-x11-0 libxcb-render0 libxcb-render-util0`
+
+(optional) `sudo apt install -y qt6-base-dev qt6-wayland libqt5x11extras5`
+
 To use the application, simply run the `src/main.py` file. The application will start in the system tray. You can then access the chat window by clicking the icon in the system tray.
 
 ## Images
