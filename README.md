@@ -1,4 +1,4 @@
-# Toolbar Chat
+# localgpt-toolbar
 
 Toolbar Chat is a chat application that uses OpenAI's API to answer questions. The idea is to have a chat window that can be accessed from the system tray, and stores the chat history in a database that is completely local to the user.
 
