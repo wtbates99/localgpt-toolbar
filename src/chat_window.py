@@ -49,11 +49,23 @@ class ChatWindow(QMainWindow):
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         layout = QVBoxLayout(central_widget)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(8)
 
         # Context selector
         context_layout = QHBoxLayout()
+        context_layout.setContentsMargins(0, 0, 0, 8)
         self.context_combo = QComboBox()
         self.context_combo.setMinimumWidth(200)
+        self.context_combo.setStyleSheet(
+            """
+            QComboBox {
+                padding: 5px;
+                border: 1px solid;
+                border-radius: 4px;
+            }
+        """
+        )
         context_layout.addWidget(QLabel("Context:"))
         context_layout.addWidget(self.context_combo)
         context_layout.addStretch()
@@ -65,14 +77,45 @@ class ChatWindow(QMainWindow):
         # Chat history
         self.chat_history = QTextEdit()
         self.chat_history.setReadOnly(True)
+        self.chat_history.setStyleSheet(
+            """
+            QTextEdit {
+                border: 1px solid;
+                border-radius: 4px;
+                padding: 8px;
+            }
+        """
+        )
         splitter.addWidget(self.chat_history)
         layout.addWidget(splitter)
 
         # Input area
         input_layout = QHBoxLayout()
+        input_layout.setContentsMargins(0, 8, 0, 8)
         self.input_field = QTextEdit()
         self.input_field.setMaximumHeight(100)
+        self.input_field.setStyleSheet(
+            """
+            QTextEdit {
+                border: 1px solid;
+                border-radius: 4px;
+                padding: 8px;
+            }
+        """
+        )
         self.send_button = QPushButton("Send")
+        self.send_button.setStyleSheet(
+            """
+            QPushButton {
+                padding: 8px 16px;
+                border: 1px solid;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                border-width: 2px;
+            }
+        """
+        )
         self.send_button.clicked.connect(self.handle_send_message)
         input_layout.addWidget(self.input_field)
         input_layout.addWidget(self.send_button)
@@ -81,6 +124,15 @@ class ChatWindow(QMainWindow):
         # Progress bar
         self.progress_bar = QProgressBar()
         self.progress_bar.setVisible(False)
+        self.progress_bar.setStyleSheet(
+            """
+            QProgressBar {
+                border: 1px solid;
+                border-radius: 4px;
+                text-align: center;
+            }
+        """
+        )
         layout.addWidget(self.progress_bar)
 
     def setup_shortcuts(self) -> None:
@@ -148,7 +200,25 @@ class ChatWindow(QMainWindow):
     def append_message(self, sender: str, content: str) -> None:
         cursor = self.chat_history.textCursor()
         cursor.movePosition(QTextCursor.MoveOperation.End)
-        cursor.insertText(f"\n{sender}: {content}\n")
+
+        # Add styling to different message types
+        if sender == "You":
+            cursor.insertHtml(
+                f'<div style="margin: 12px 0; padding: 8px; border: 1px solid; border-radius: 4px;">'
+                f"<b>{sender}:</b><br>{content}<br><br></div>"
+            )
+        elif sender == "Assistant":
+            cursor.insertHtml(
+                f'<div style="margin: 12px 0; padding: 8px; border: 1px solid; border-radius: 4px;">'
+                f"<b>{sender}:</b><br>{content}</div>"
+                f'<div style="margin: 12px 0;">{"".join(["-" for _ in range(10)])}<br><br></div>'
+            )
+        elif sender == "Context":
+            cursor.insertHtml(
+                f'<div style="margin: 12px 0; padding: 8px; border: 1px solid; border-radius: 4px; border-style: dashed;">'
+                f"<i>{sender}:</i><br>{content}<br><br></div>"
+            )
+
         self.chat_history.setTextCursor(cursor)
         self.chat_history.ensureCursorVisible()
 
