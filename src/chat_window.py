@@ -16,6 +16,7 @@ import asyncio
 import asyncio.events
 from typing import Optional
 from datetime import datetime
+import markdown2
 
 from openai_client import OpenAIWrapper
 from db_manager import DatabaseManager, ChatMessage
@@ -200,6 +201,18 @@ class ChatWindow(QMainWindow):
     def append_message(self, sender: str, content: str) -> None:
         cursor = self.chat_history.textCursor()
         cursor.movePosition(QTextCursor.MoveOperation.End)
+
+        # Convert markdown to HTML for Assistant messages
+        if sender == "Assistant":
+            content = markdown2.markdown(
+                content,
+                extras=[
+                    "fenced-code-blocks",
+                    "tables",
+                    "break-on-newline",
+                    "code-friendly",
+                ],
+            )
 
         # Add styling to different message types
         if sender == "You":
